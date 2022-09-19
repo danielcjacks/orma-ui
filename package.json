@@ -5,7 +5,7 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "serve": "ladle serve",
+        "dev": "ladle serve",
         "deploy": "node -e \"require('./.github/deploy.js').deploy()\""
     },
     "peerDependencies": {
