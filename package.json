@@ -5,30 +5,29 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "vitebook:dev": "vitebook dev",
-    "vitebook:build": "vitebook build",
-    "vitebook:preview": "vitebook preview"
+    "serve": "ladle serve"
   },
-  "dependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+  "peerDependencies": {
+    "@emotion/react": ">=11.00.0",
+    "@emotion/styled": ">=11.0.0",
+    "@mui/material": ">=5.0.0",
+    "mobx": ">=6.0.0",
+    "mobx-react-lite": ">=3.0.0",
+    "react": ">=17.0.2",
+    "react-dom": ">=17.0.2"
   },
   "devDependencies": {
+    "@emotion/react": "^11.10.0",
+    "@emotion/styled": "^11.10.0",
+    "@ladle/react": "^2.1.0",
+    "@mui/material": "^5.10.0",
     "@types/react": "^17.0.38",
     "@types/react-dom": "^17.0.11",
-    "@vitebook/client": "0.100.5",
-    "@vitebook/core": "0.100.5",
-    "@vitebook/markdown-preact": "0.100.5",
-    "@vitebook/preact": "0.100.5",
-    "@vitebook/theme-default": "0.100.5",
-    "preact": "^10.5.14",
-    "preact-render-to-string": "^5.1.19",
-    "svelte": "^3.43.1",
-    "typescript": "^4.4.0",
-    "vite": "^3.0.0"
+    "mobx": ">=6.0.0",
+    "mobx-react-lite": "^3.4.0",
+    "react": ">=17.0.2",
+    "react-dom": ">=17.0.2",
+    "typescript": "^4.4.0"
   },
   "repository": {
     "type": "git",
@@ -49,5 +48,8 @@
   "bugs": {
     "url": "https://github.com/danielcjacks/orma-ui/issues"
   },
-  "homepage": "https://github.com/danielcjacks/orma-ui#readme"
+  "homepage": "https://github.com/danielcjacks/orma-ui#readme",
+  "dependencies": {
+    "orma": "^1.0.133"
+  }
 }
