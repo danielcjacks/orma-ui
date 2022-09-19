@@ -43,7 +43,7 @@ const QueryBuilder_ = ({
                 path_array={path_array}
                 query={query}
                 schema={schema}
-                // limit_to_one_subquery={true}
+                //  limit_to_one_subquery={true}
             />
         </QueryObject>
     )
