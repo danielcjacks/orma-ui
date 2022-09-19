@@ -392,7 +392,7 @@ const BatchLineInput = observer(({ path_array, query }: { path_array: any; query
 
 const QueryClauseFieldSelect = observer(
     ({ path_array, query, schema }: { path_array: any; query: any; schema: OrmaSchema }) => {
-        const entity_name = query_path_to_entity_name(path_array, query)
+        const entity_name = query_path_to_entity_name(path_array, query, schema)
         const field_name = safe_path_or(undefined, path_array, query)
 
         return (
@@ -568,7 +568,11 @@ const QueryNestedClause = observer(
                     <QueryJoinedClauseChooser path_array={path_array} query={query} />
                     <>
                         <QueryArray>
-                            <QueryNestedPath path_array={[...path_array, 0]} query={query} />
+                            <QueryNestedPath
+                                path_array={[...path_array, 0]}
+                                query={query}
+                                schema={schema}
+                            />
                             <QueryWhereValue
                                 path_array={[...path_array, 1]}
                                 query={query}
@@ -582,53 +586,57 @@ const QueryNestedClause = observer(
     }
 )
 
-const QueryNestedPath = observer(({ path_array, query }: { path_array: any; query: any }) => {
-    const nested_path = safe_path_or([], path_array, query).filter((el: any) => !!el) as string[]
+const QueryNestedPath = observer(
+    ({ path_array, query, schema }: { path_array: any; query: any; schema: OrmaSchema }) => {
+        const nested_path = safe_path_or([], path_array, query).filter(
+            (el: any) => !!el
+        ) as string[]
 
-    const edge_tables = get_nested_path_edge_tables(path_array, query)
+        const edge_tables = get_nested_path_edge_tables(path_array, query, schema)
 
-    return (
-        <>
-            <Grid container alignItems='center'>
-                {nested_path.map((table_name: string, i: number) => (
-                    <React.Fragment key={i}>
-                        <Grid item>
-                            <Box paddingRight={1}>
-                                <Chip
-                                    label={title_case(table_name)}
-                                    onDelete={action(e => nested_path.splice(i, 1))}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid item>
-                            <Box paddingRight={1}>
-                                <MdChevronRight fontSize='large' />
-                            </Box>
-                        </Grid>
-                    </React.Fragment>
-                ))}
-                <Grid item>
-                    <TextField
-                        select
-                        value={''}
-                        onChange={action(e => {
-                            const new_nested_path = [...nested_path, e.target.value]
-                            assoc_path_mutate(path_array, new_nested_path, query)
-                        })}
-                        variant='outlined'
-                        size='small'
-                    >
-                        {edge_tables.map((entity_name_option: any) => (
-                            <MenuItem key={entity_name_option} value={entity_name_option}>
-                                {title_case(entity_name_option)}
-                            </MenuItem>
-                        ))}
-                    </TextField>
+        return (
+            <>
+                <Grid container alignItems='center'>
+                    {nested_path.map((table_name: string, i: number) => (
+                        <React.Fragment key={i}>
+                            <Grid item>
+                                <Box paddingRight={1}>
+                                    <Chip
+                                        label={title_case(table_name)}
+                                        onDelete={action(e => nested_path.splice(i, 1))}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item>
+                                <Box paddingRight={1}>
+                                    <MdChevronRight fontSize='large' />
+                                </Box>
+                            </Grid>
+                        </React.Fragment>
+                    ))}
+                    <Grid item>
+                        <TextField
+                            select
+                            value={''}
+                            onChange={action(e => {
+                                const new_nested_path = [...nested_path, e.target.value]
+                                assoc_path_mutate(path_array, new_nested_path, query)
+                            })}
+                            variant='outlined'
+                            size='small'
+                        >
+                            {edge_tables.map((entity_name_option: any) => (
+                                <MenuItem key={entity_name_option} value={entity_name_option}>
+                                    {title_case(entity_name_option)}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </>
-    )
-})
+            </>
+        )
+    }
+)
 
 const QueryGroupBy = observer(
     ({ path_array, query, schema }: { path_array: any; query: any; schema: OrmaSchema }) => {

@@ -3,7 +3,6 @@
     "version": "0.0.2",
     "description": "UI components and functions for orma, react and mobx",
     "main": "index.js",
-    "type": "module",
     "scripts": {
         "dev": "ladle serve",
         "deploy": "node -e \"require('./.github/deploy.js').deploy()\""
