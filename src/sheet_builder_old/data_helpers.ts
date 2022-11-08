@@ -5,7 +5,8 @@ import mapValuesDeep from 'deepdash/mapValuesDeep'
 import { action } from 'mobx'
 import { Path } from 'orma/build/types'
 import { assoc, assocPath, dropLast, last, reverse, type } from 'ramda'
-import { assoc_path_mutate } from 'yay_json/build/assoc_path_mutate'
+import { assoc_path_mutate } from './helpers'
+
 /**
  * Just like pathOr from ramda, except it wont throw errors when used with mobx arrays
  */

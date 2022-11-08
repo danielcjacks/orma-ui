@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { compose, isNil, map, Path, range, split, test, type } from 'ramda'
+import { clone, compose, isNil, map, Path, range, split, test, type } from 'ramda'
 
 export const image_url_to_b64 = async (url: string) => {
     const b64 = await axios.get(url, { responseType: 'arraybuffer' }).then(response => {
@@ -43,46 +43,45 @@ export const key_to_path = (path: any) =>
 export const json_to_html = (json: any) => json //<pre>{JSON.stringify(json, undefined, 4)}</pre>
 
 // // just like assocPath, but mutates the input argument and so is more performant
-// export const assoc_path_mutate = (path, value, obj) => {
-//     var p = clone(path) // path which gets smaller for each while loop iteration
-//     var o = obj // object which moves with p
-//     while (p.length - 1) {
-//         var p_el = p.shift()
-//         var next_p_el = p[0]
+export const assoc_path_mutate = (path: any, value: any, obj: any) => {
+    var p = clone(path) // path which gets smaller for each while loop iteration
+    var o = obj // object which moves with p
+    while (p.length - 1) {
+        var p_el = p.shift()
+        var next_p_el = p[0]
 
-//         const o_type = type(o)
-//         const o_is_array = o_type === 'Array'
-//         const o_is_indexible = o_is_array || o_type === 'Object'
-//         // if (o_is_array && isNaN(p_el)) {
-//         //     throw Error('Trying to acces an array with a non numeric index')
-//         // }
+        const o_type = type(o)
+        const o_is_array = o_type === 'Array'
+        const o_is_indexible = o_is_array || o_type === 'Object'
+        // if (o_is_array && isNaN(p_el)) {
+        //     throw Error('Trying to acces an array with a non numeric index')
+        // }
 
-//         const contains_path_el = o_is_array
-//             ? p_el < o.length
-//             : p_el in o
+        const contains_path_el = o_is_array ? p_el < o.length : p_el in o
 
-//         if (o_is_array && !contains_path_el) {
-//             const add_items_count = p_el - o.length
-//             if (add_items_count > 0) {
-//                 for (let i = 0; i < add_items_count; i++) {
-//                     o.push(undefined)
-//                 }
-//             }
-//         }
+        if (o_is_array && !contains_path_el) {
+            const add_items_count = p_el - o.length
+            if (add_items_count > 0) {
+                for (let i = 0; i < add_items_count; i++) {
+                    o.push(undefined)
+                }
+            }
+        }
 
-//         if (!contains_path_el || !o_is_indexible) { // create obj/array if not there yet
-//             if (type(next_p_el) !== 'Number') {
-//                 o[p_el] = {}
-//             } else {
-//                 o[p_el] = []
-//             }
-//         }
+        if (!contains_path_el || !o_is_indexible) {
+            // create obj/array if not there yet
+            if (type(next_p_el) !== 'Number') {
+                o[p_el] = {}
+            } else {
+                o[p_el] = []
+            }
+        }
 
-//         o = o[p_el]
-//     }
+        o = o[p_el]
+    }
 
-//     o[p[0]] = value
-// }
+    o[p[0]] = value
+}
 
 export const sleep = (ms: number) => {
     return new Promise(resolve => setTimeout(resolve, ms))

@@ -7,7 +7,7 @@ import { get_select } from 'orma/build/query/macros/select_macro'
 import { dropLast, last } from 'ramda'
 import React from 'react'
 import { MdAdd, MdArrowDownward, MdArrowUpward, MdChevronRight, MdClose } from 'react-icons/md'
-import { assoc_path_mutate } from 'yay_json/build/assoc_path_mutate'
+
 import {
     assoc_append,
     assoc_key_name,
@@ -16,7 +16,7 @@ import {
     path_delete,
     safe_path_or
 } from './data_helpers'
-import { title_case } from './helpers'
+import { assoc_path_mutate, title_case } from './helpers'
 import { MuiChipInput } from './mui_chip_input'
 import {
     get_nested_path_edge_tables,
