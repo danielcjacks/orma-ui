@@ -6,7 +6,7 @@ import { OrmaQuery } from 'orma/src/types/query/query_types'
 import { format } from 'sql-formatter'
 
 export const reset_query_log = action(
-    (query: { sql_queries: string; query: OrmaQuery<any> }, schema: any) => {
+    (query: { sql_queries: string; query: OrmaQuery<any, any> }, schema: any) => {
         query.sql_queries = ''
         orma_query(query.query, schema, sqls => fake_sql_fn(sqls, query))
     }

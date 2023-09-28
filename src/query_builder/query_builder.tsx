@@ -14,11 +14,13 @@ import {
 import { action, runInAction, toJS } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { get_all_edges, get_entity_names, get_field_names } from 'orma/build/helpers/schema_helpers'
-import { OrmaSchema } from 'orma/build/introspector/introspector'
+import { OrmaSchema } from 'orma/build/types/schema/schema_types'
 import React, { useState } from 'react'
 import { filter_object, rename_key, title_case } from '../helpers/helpers'
 import { MoreButton } from '../reusables/more_button'
 import { test_schema } from '../test_schema'
+import { sort } from 'ramda'
+import { NumberField, get_number_width_style, get_text_field_props } from './number_field'
 
 export const QueryBuilder = observer(
     ({
@@ -68,7 +70,8 @@ const Subquery = observer(
 
         const entity_resolvers = get_entity_resolvers(possible_entities)
         const field_resolvers = get_field_resolvers(orma_schema, entity)
-        const resolvers = { ...entity_resolvers, ...field_resolvers }
+        const keyword_resolvers = get_keyword_resolvers(orma_schema, entity)
+        const resolvers = { ...field_resolvers, ...entity_resolvers, ...keyword_resolvers }
 
         return (
             <JsonObject>
@@ -116,6 +119,38 @@ const get_field_resolvers = (orma_schema: OrmaSchema, entity_name: string) => {
             label: title_case(field),
             converter: (obj, new_field) => rename_key(obj, field, new_field),
             group: 'Fields'
+        }
+        return acc
+    }, {})
+
+    return resolvers
+}
+
+const get_keyword_resolvers = (orma_schema: OrmaSchema, entity_name: string) => {
+    const keywords = ['$offset', '$limit']
+
+    const resolvers = keywords.reduce<QueryBuilderResolvers>((acc, field) => {
+        acc[field] = {
+            default: true,
+            renderer: observer(({ orma_schema, parent, field }) => (
+                <div>
+                    <NumberField
+                        {...get_text_field_props(parent, field)}
+                        required
+                        fullWidth={false}
+                        label=''
+                        inputProps={{ min: 0 }}
+                        style={get_number_width_style(1)}
+                        onChange={action(e => {
+                            parent[field] = Number(e.target.value)
+                        })}
+                    />
+                    {/* <Field parent={parent} field={field} /> */}
+                </div>
+            )),
+            label: title_case(field),
+            converter: (obj, new_field) => rename_key(obj, field, new_field),
+            group: 'Keywords'
         }
         return acc
     }, {})
@@ -177,7 +212,7 @@ const get_options = (resolvers: QueryBuilderResolvers) =>
 
 const get_option = (resolvers: QueryBuilderResolvers, field: string) => {
     return {
-        label: resolvers[field].label,
+        label: resolvers[field]?.label || '',
         field,
         resolver: resolvers[field]
     }
@@ -270,7 +305,7 @@ const JsonObjectValue = observer(
         )
         const Renderer = resolvers[field]?.renderer ?? DefaultRenderer
 
-        console.log('t1', toJS(obj), field)
+        // console.log('t1', toJS(obj), field)
         return <Renderer orma_schema={orma_schema} parent={obj} field={field} />
     }
 )
@@ -278,11 +313,13 @@ const JsonObjectValue = observer(
 const JsonObjectAddKey = observer(
     ({ obj, resolvers }: { obj: Record<string, any>; resolvers: QueryBuilderResolvers }) => {
         const possible_resolvers = get_possible_resolvers(resolvers, obj)
-        const options = get_options(possible_resolvers)
+        const options = sort(
+            (a, b) => b.resolver.group?.localeCompare(a.resolver?.group || '') ?? 0,
+            get_options(possible_resolvers)
+        )
 
         const [value, set_value] = useState('')
 
-        console.log(options)
         return (
             <Autocomplete
                 disablePortal

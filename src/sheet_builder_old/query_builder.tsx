@@ -2,7 +2,7 @@ import { Box, Chip, Grid, IconButton, ListSubheader, MenuItem, TextField } from 
 import { action, observable, toJS } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { get_field_names, is_entity_name, is_field_name } from 'orma/build/helpers/schema_helpers'
-import { OrmaSchema } from 'orma/build/introspector/introspector'
+import { OrmaSchema } from 'orma/build/types/schema/schema_types'
 import { get_select } from 'orma/build/query/macros/select_macro'
 import { dropLast, last } from 'ramda'
 import React from 'react'
