@@ -57,17 +57,12 @@ export const TestContainer = observer(({ schema, query }: { schema: OrmaSchema; 
                 gap: '1rem',
                 // gridTemplateColumns: '1fr 1fr',
                 backgroundColor: '#ccc',
-                padding: '1rem'
+                padding: '1rem',
                 // margin: '1rem'
-                // overflow: 'auto'
+                overflow: 'auto'
             }}
         >
-            <QueryBuilder
-                orma_schema={schema}
-                query={store.query}
-                extra_resolvers={{}}
-                is_root={true}
-            />
+            <QueryBuilder orma_schema={schema} query={store.query} />
 
             <FunctionEditor store={store} />
         </div>
