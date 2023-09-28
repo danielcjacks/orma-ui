@@ -6,7 +6,7 @@ export const Filter = observer(() => {
     return (
         <div style={container_style}>
             <Typography>Filter</Typography>
-            Coming soon...
+            Group By Order By Where Where Connected Having
         </div>
     )
 })
