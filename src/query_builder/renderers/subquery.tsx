@@ -2,17 +2,14 @@ import { alpha } from '@mui/material'
 import { observer } from 'mobx-react-lite'
 import { get_all_edges, get_entity_names, get_field_names } from 'orma/build/helpers/schema_helpers'
 import { OrmaSchema } from 'orma/build/types/schema/schema_types'
-import { MdCircle } from 'react-icons/md'
-import { EntityName } from './entity_name'
+import { uniq } from 'ramda'
 import { AddEntity } from './add_entity'
+import { EntityName } from './entity_name'
+import { Where } from './where/where'
 import { Nest } from './nest'
 import { Pagination } from './pagination'
-import { SelectFields } from './select_fields'
-import { pathOr, uniq } from 'ramda'
-import { OrmaQuery } from 'orma'
-import { DeepMutable } from 'orma/src/types/schema/schema_helper_types'
 import { Rename } from './rename'
-import { Filter } from './filter'
+import { SelectFields } from './select_fields'
 
 export type Query = Record<any, any>
 
@@ -75,7 +72,12 @@ export const Subquery = observer(
                                     orma_schema={orma_schema}
                                 />
                                 <Pagination parent={subquery[entity]!} />
-                                <Filter />
+                                <Where
+                                    subquery={subquery[entity]}
+                                    entity={entity}
+                                    schema={orma_schema}
+                                />
+
                                 <Rename />
                             </div>
                         </div>

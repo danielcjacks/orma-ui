@@ -1,4 +1,4 @@
-import { Chip, Stack, Typography } from '@mui/material'
+import { Chip, Stack, Tooltip, Typography } from '@mui/material'
 import { MdCheckBox, MdCheckBoxOutlineBlank } from 'react-icons/md'
 import { title_case } from '../../helpers/helpers'
 import { action } from 'mobx'
@@ -24,7 +24,8 @@ export const SelectFields = observer(
                     style={{
                         display: 'grid',
                         gap: '5px',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(80px, auto))'
+
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))'
                     }}
                 >
                     {possible_field_names.map(field => {
@@ -33,24 +34,35 @@ export const SelectFields = observer(
 
                         return (
                             <Stack key={field}>
-                                <Chip
-                                    onClick={action(() => {
-                                        if (is_selected) {
-                                            delete parent[field]
-                                        } else {
-                                            parent[field] = true
+                                <Tooltip title={field_name}>
+                                    <Chip
+                                        onClick={action(() => {
+                                            if (is_selected) {
+                                                delete parent[field]
+                                            } else {
+                                                parent[field] = true
+                                            }
+                                        })}
+                                        icon={
+                                            is_selected ? (
+                                                <MdCheckBox size={icon_size} />
+                                            ) : (
+                                                <MdCheckBoxOutlineBlank size={icon_size} />
+                                            )
                                         }
-                                    })}
-                                    icon={
-                                        is_selected ? (
-                                            <MdCheckBox size={icon_size} />
-                                        ) : (
-                                            <MdCheckBoxOutlineBlank size={icon_size} />
-                                        )
-                                    }
-                                    label={field_name}
-                                    variant={is_selected ? 'filled' : 'outlined'}
-                                />
+                                        label={
+                                            <div
+                                                style={{
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}
+                                            >
+                                                {field_name}
+                                            </div>
+                                        }
+                                        variant={is_selected ? 'filled' : 'outlined'}
+                                    />
+                                </Tooltip>
                             </Stack>
                         )
                     })}
