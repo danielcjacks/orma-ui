@@ -5,7 +5,7 @@ import { OrmaSchema } from 'orma'
 import { MdAdd } from 'react-icons/md'
 import { container_style } from '../pagination'
 import { Query } from '../subquery'
-import { WhereCondition, comparitors } from './WhereCondition'
+import { WhereCondition, is_comparator, is_connective } from './WhereCondition'
 
 export const Where = observer(
     ({ subquery, entity, schema }: { subquery: Query; entity: string; schema: OrmaSchema }) => {
@@ -26,11 +26,33 @@ const WhereClause = observer(
         }
         const clause_type = Object.keys(subquery.$where)[0]
 
-        if (Object.keys(comparitors).includes(clause_type)) {
+        if (is_comparator(clause_type)) {
             return <WhereCondition subquery={subquery} entity={entity} schema={schema} />
         }
 
+        if (is_connective(clause_type)) {
+            return <MultiClause subquery={subquery} entity={entity} schema={schema} />
+        }
+
         return <>Not implemented</>
+    }
+)
+
+const MultiClause = observer(
+    ({ subquery, entity, schema }: { subquery: Query; entity: string; schema: OrmaSchema }) => {
+        const clause_type = Object.keys(subquery.$where)[0]
+        const conditions = subquery.$where[clause_type]
+        return (
+            <div>
+                {conditions.map((condition: Query, index: number) => (
+                    <div key={index}>
+                        <WhereCondition subquery={condition} entity={entity} schema={schema} />
+                    </div>
+                ))}
+
+                <AddWhereClauseButton subquery={subquery} clause_type={clause_type} />
+            </div>
+        )
     }
 )
 
