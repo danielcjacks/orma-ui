@@ -36,6 +36,10 @@ export const WhereCondition = observer(
 
 const ChooseColumn = observer(
     ({ entity, subquery, schema }: { subquery: Query; entity: string; schema: OrmaSchema }) => {
+        if (!subquery.$where) {
+            return <>Not implemented</>
+        }
+
         const clause_type = Object.keys(subquery.$where)[0]
         const field_names = get_field_names(entity, schema)
 
@@ -75,7 +79,7 @@ const ChooseColumn = observer(
     }
 )
 
-export const comparitors = {
+export const comparators = {
     $eq: '=',
     $gt: '>',
     $gte: '>=',
@@ -90,13 +94,18 @@ export const connectives = {
     $any_path: 'Any'
 } as Record<string, string>
 
-const comparitor_options = Object.keys(comparitors)
+const comparator_options = Object.keys(comparators)
 const connective_options = Object.keys(connectives)
-const is_comparitor = (option: any) => comparitor_options.includes(option)
+export const is_comparator = (option: any) => comparator_options.includes(option)
+export const is_connective = (option: any) => connective_options.includes(option)
 
 const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
+    if (!subquery.$where) {
+        return <>Not implemented</>
+    }
+
     const clause_type = Object.keys(subquery.$where)[0]
-    const options = [...comparitor_options, ...connective_options]
+    const options = [...comparator_options, ...connective_options]
     return (
         <Autocomplete
             disablePortal
@@ -104,7 +113,7 @@ const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
             freeSolo={false}
             options={options}
             getOptionLabel={option =>
-                is_comparitor(option) ? comparitors[option] : connectives[option]
+                is_comparator(option) ? comparators[option] : connectives[option]
             }
             style={{ width: '200px' }}
             renderInput={params => (
@@ -112,7 +121,7 @@ const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
             )}
             // inputValue={value}
             // onInputChange={(e, value) => set_value(value)}
-            groupBy={option => (is_comparitor(option) ? 'Comparitors' : 'Connectives')}
+            groupBy={option => (is_comparator(option) ? 'Comparators' : 'Connectives')}
             value={clause_type}
             onChange={(e, option) =>
                 runInAction(() => {
@@ -120,28 +129,28 @@ const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
                         return
                     }
 
-                    const was_before_comparitor = is_comparitor(Object.keys(subquery.$where)[0])
-                    const is_now_comparitor = is_comparitor(option)
+                    const was_before_comparator = is_comparator(Object.keys(subquery.$where)[0])
+                    const is_now_comparator = is_comparator(option)
 
-                    if (was_before_comparitor && is_now_comparitor) {
+                    if (was_before_comparator && is_now_comparator) {
                         subquery.$where = {
                             [option]: subquery.$where[clause_type]
                         }
                         return
                     }
-                    if (!was_before_comparitor && !is_now_comparitor) {
+                    if (!was_before_comparator && !is_now_comparator) {
                         subquery.$where = {
                             [option]: subquery.$where[clause_type]
                         }
                         return
                     }
-                    if (!was_before_comparitor && is_now_comparitor) {
+                    if (!was_before_comparator && is_now_comparator) {
                         subquery.$where = {
                             [option]: [subquery.$where]
                         }
                         return
                     }
-                    if (was_before_comparitor && !is_now_comparitor) {
+                    if (was_before_comparator && !is_now_comparator) {
                         subquery.$where = {
                             [option]: [subquery.$where]
                         }
@@ -154,6 +163,9 @@ const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
 })
 
 const ChooseValue = observer(({ subquery }: { subquery: Query }) => {
+    if (!subquery.$where) {
+        return <>Not implemented</>
+    }
     const clause_type = Object.keys(subquery.$where)[0]
     return (
         <TextField
