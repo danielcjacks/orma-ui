@@ -7,22 +7,30 @@ import { Query } from '../subquery'
 import { AddWhereClauseButton } from './add_where_clause_button'
 import { ConnectiveClause, default_blank_condition } from './connective_clause'
 import { WhereConditionRow, is_condition, is_connective } from './where_condition'
+import { title_case } from '../../../helpers/helpers'
 
 export const Where = observer(
     ({
+        mode,
         entity_subquery,
         entity,
         schema
     }: {
+        mode: 'where' | 'having'
         entity_subquery: Query
         entity: string
         schema: OrmaSchema
     }) => {
         return (
             <div style={container_style}>
-                <Typography>Where</Typography>
+                <Typography>{title_case(mode)}</Typography>
 
-                <WhereClause entity_subquery={entity_subquery} entity={entity} schema={schema} />
+                <WhereClause
+                    entity_subquery={entity_subquery}
+                    mode={mode}
+                    entity={entity}
+                    schema={schema}
+                />
             </div>
         )
     }
@@ -32,30 +40,33 @@ const WhereClause = observer(
     ({
         entity_subquery,
         entity,
+        mode,
         schema
     }: {
         entity_subquery: Query
+        mode: 'where' | 'having'
         entity: string
         schema: OrmaSchema
     }) => {
-        if (!entity_subquery.$where) {
+        const keyword = mode === 'where' ? '$where' : '$having'
+        if (!entity_subquery[keyword]) {
             return (
                 <AddWhereClauseButton
                     on_click={action(() => {
-                        entity_subquery.$where = default_blank_condition
+                        entity_subquery[keyword] = default_blank_condition
                     })}
                 />
             )
         }
-        const clause_type = Object.keys(entity_subquery.$where)[0]
+        const clause_type = Object.keys(entity_subquery[keyword])[0]
 
         if (is_condition(clause_type)) {
             return (
                 <WhereConditionRow
                     onClose={action(() => {
-                        delete entity_subquery.$where
+                        delete entity_subquery[keyword]
                     })}
-                    condition_subquery={entity_subquery.$where}
+                    condition_subquery={entity_subquery[keyword]}
                     entity={entity}
                     schema={schema}
                 />
@@ -65,11 +76,11 @@ const WhereClause = observer(
         if (is_connective(clause_type)) {
             return (
                 <ConnectiveClause
-                    clause_subquery={entity_subquery.$where}
+                    clause_subquery={entity_subquery[keyword]}
                     entity={entity}
                     schema={schema}
                     onClose={action(() => {
-                        delete entity_subquery.$where
+                        delete entity_subquery[keyword]
                     })}
                 />
             )

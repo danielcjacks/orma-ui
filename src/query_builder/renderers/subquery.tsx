@@ -10,6 +10,8 @@ import { Nest } from './nest'
 import { Pagination } from './pagination'
 import { Rename } from './rename'
 import { SelectFields } from './select_fields'
+import { GroupBy } from './group_by'
+import { OrderBy } from './order_by'
 
 export type Query = Record<any, any>
 
@@ -70,9 +72,28 @@ export const Subquery = observer(
 
                                 <Pagination parent={subquery[entity]!} />
                                 <Where
+                                    mode={'where'}
                                     entity_subquery={subquery[entity]}
                                     entity={entity}
                                     schema={orma_schema}
+                                />
+                                <Where
+                                    mode={'having'}
+                                    entity_subquery={subquery[entity]}
+                                    entity={entity}
+                                    schema={orma_schema}
+                                />
+
+                                <GroupBy
+                                    entity_subquery={subquery[entity]}
+                                    schema={orma_schema}
+                                    entity={entity}
+                                />
+
+                                <OrderBy
+                                    entity_subquery={subquery[entity]}
+                                    schema={orma_schema}
+                                    entity={entity}
                                 />
 
                                 {/* <Rename /> */}
