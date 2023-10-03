@@ -73,7 +73,7 @@ export const Subquery = observer(
                                 />
                                 <Pagination parent={subquery[entity]!} />
                                 <Where
-                                    subquery={subquery[entity]}
+                                    entity_subquery={subquery[entity]}
                                     entity={entity}
                                     schema={orma_schema}
                                 />

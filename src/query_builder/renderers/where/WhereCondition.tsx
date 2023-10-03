@@ -5,10 +5,39 @@ import { OrmaSchema } from 'orma'
 import { get_field_names } from 'orma/build/helpers/schema_helpers'
 import { MdClose } from 'react-icons/md'
 import { Query } from '../subquery'
-import { is } from 'ramda'
 
-export const WhereCondition = observer(
-    ({ subquery, entity, schema }: { subquery: Query; entity: string; schema: OrmaSchema }) => {
+export const operators = {
+    $eq: '=',
+    $gt: '>',
+    $gte: '>=',
+    $lt: '<',
+    $lte: '<=',
+    $like: 'like'
+} as Record<string, string>
+
+export const connectives = {
+    $and: 'And',
+    $or: 'Or',
+    $any_path: 'Any'
+} as Record<string, string>
+
+const operator_options = Object.keys(operators)
+const connective_options = Object.keys(connectives)
+export const is_operator = (option: any) => operator_options.includes(option)
+export const is_connective = (option: any) => connective_options.includes(option)
+
+export const WhereConditionRow = observer(
+    ({
+        condition_subquery,
+        entity,
+        schema,
+        onClose
+    }: {
+        condition_subquery: Query
+        entity: string
+        schema: OrmaSchema
+        onClose: () => void
+    }) => {
         return (
             <div
                 style={{
@@ -17,16 +46,13 @@ export const WhereCondition = observer(
                     gap: '10px'
                 }}
             >
-                <ChooseColumn subquery={subquery} entity={entity} schema={schema} />
+                <ConditionFields
+                    entity={entity}
+                    condition_subquery={condition_subquery}
+                    schema={schema}
+                />
 
-                <ChooseOperator subquery={subquery} />
-                <ChooseValue subquery={subquery} />
-
-                <IconButton
-                    onClick={action(() => {
-                        delete subquery.$where
-                    })}
-                >
+                <IconButton onClick={onClose}>
                     <MdClose />
                 </IconButton>
             </div>
@@ -34,16 +60,45 @@ export const WhereCondition = observer(
     }
 )
 
-const ChooseColumn = observer(
-    ({ entity, subquery, schema }: { subquery: Query; entity: string; schema: OrmaSchema }) => {
-        if (!subquery.$where) {
-            return <>Not implemented</>
-        }
+const ConditionFields = observer(
+    ({
+        condition_subquery,
+        entity,
+        schema
+    }: {
+        condition_subquery: Query
+        entity: string
+        schema: OrmaSchema
+    }) => {
+        return (
+            <>
+                <ChooseColumn
+                    condition_subquery={condition_subquery}
+                    entity={entity}
+                    schema={schema}
+                />
+                <OperatorDropdown condition_subquery={condition_subquery} />
 
-        const clause_type = Object.keys(subquery.$where)[0]
+                <ValueTextField condition_subquery={condition_subquery} />
+            </>
+        )
+    }
+)
+
+const ChooseColumn = observer(
+    ({
+        entity,
+        condition_subquery,
+        schema
+    }: {
+        condition_subquery: Query
+        entity: string
+        schema: OrmaSchema
+    }) => {
+        const clause_type = Object.keys(condition_subquery)[0]
         const field_names = get_field_names(entity, schema)
 
-        const value = subquery.$where[clause_type][0]
+        const value = condition_subquery[clause_type][0]
 
         return (
             <Autocomplete
@@ -61,15 +116,16 @@ const ChooseColumn = observer(
                 value={value || ''}
                 onChange={(e: any, option: any) => {
                     runInAction(() => {
-                        if (!subquery.$where) {
-                            subquery.$where = {}
+                        if (!condition_subquery[clause_type]) {
+                            condition_subquery[clause_type] = [null, { $escape: null }]
                         }
-                        if (!subquery.$where[clause_type]) {
-                            subquery.$where[clause_type] = []
+
+                        if (!condition_subquery[clause_type][0]) {
+                            condition_subquery[clause_type][0] = null
                         }
 
                         if (option) {
-                            subquery.$where[clause_type][0] = option
+                            condition_subquery[clause_type][0] = option
                         }
                     })
                     return
@@ -79,33 +135,51 @@ const ChooseColumn = observer(
     }
 )
 
-export const comparators = {
-    $eq: '=',
-    $gt: '>',
-    $gte: '>=',
-    $lt: '<',
-    $lte: '<=',
-    $like: 'like'
-} as Record<string, string>
+const cleanup_obj = (obj: any) => {
+    Object.keys(obj).forEach(key => {
+        delete obj[key]
+    })
+}
 
-export const connectives = {
-    $and: 'And',
-    $or: 'Or',
-    $any_path: 'Any'
-} as Record<string, string>
-
-const comparator_options = Object.keys(comparators)
-const connective_options = Object.keys(connectives)
-export const is_comparator = (option: any) => comparator_options.includes(option)
-export const is_connective = (option: any) => connective_options.includes(option)
-
-const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
-    if (!subquery.$where) {
-        return <>Not implemented</>
+const handleOperatorChange = action((prev: string, next: string, condition_subquery: Query) => {
+    if (!next) {
+        return
     }
 
-    const clause_type = Object.keys(subquery.$where)[0]
-    const options = [...comparator_options, ...connective_options]
+    const switching_from_operator = is_operator(prev)
+    const switching_to_operator = is_operator(next)
+    const prev_value = condition_subquery[prev]
+
+    cleanup_obj(condition_subquery)
+
+    // eg when switching from $eq to $gt
+    if (switching_from_operator && switching_to_operator) {
+        // same nest just change the operator
+        condition_subquery[next] = prev_value
+    }
+
+    // eg when switching from $and to $or
+    else if (!switching_from_operator && !switching_to_operator) {
+        // same nest just change the connective
+        condition_subquery[next] = prev_value
+    }
+
+    // eg when switching from $and to $eq
+    else if (!switching_from_operator && switching_to_operator) {
+        // remove one layer of nesting
+        condition_subquery[next] = prev_value?.[0]
+    }
+
+    // eg when switching from $eq to $and
+    else if (switching_from_operator && !switching_to_operator) {
+        // wrap in one layer of nesting
+        condition_subquery[next] = [{ [prev]: prev_value }]
+    }
+})
+
+const OperatorDropdown = observer(({ condition_subquery }: { condition_subquery: Query }) => {
+    const clause_type = Object.keys(condition_subquery)[0]
+    const options = [...operator_options, ...connective_options]
     return (
         <Autocomplete
             disablePortal
@@ -113,7 +187,7 @@ const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
             freeSolo={false}
             options={options}
             getOptionLabel={option =>
-                is_comparator(option) ? comparators[option] : connectives[option]
+                is_operator(option) ? operators[option] : connectives[option]
             }
             style={{ width: '200px' }}
             renderInput={params => (
@@ -121,70 +195,33 @@ const ChooseOperator = observer(({ subquery }: { subquery: Query }) => {
             )}
             // inputValue={value}
             // onInputChange={(e, value) => set_value(value)}
-            groupBy={option => (is_comparator(option) ? 'Comparators' : 'Connectives')}
+            groupBy={option => (is_operator(option) ? 'Operators' : 'Connectives')}
             value={clause_type}
-            onChange={(e, option) =>
-                runInAction(() => {
-                    if (!option) {
-                        return
-                    }
-
-                    const was_before_comparator = is_comparator(Object.keys(subquery.$where)[0])
-                    const is_now_comparator = is_comparator(option)
-
-                    if (was_before_comparator && is_now_comparator) {
-                        subquery.$where = {
-                            [option]: subquery.$where[clause_type]
-                        }
-                        return
-                    }
-                    if (!was_before_comparator && !is_now_comparator) {
-                        subquery.$where = {
-                            [option]: subquery.$where[clause_type]
-                        }
-                        return
-                    }
-                    if (!was_before_comparator && is_now_comparator) {
-                        subquery.$where = {
-                            [option]: [subquery.$where]
-                        }
-                        return
-                    }
-                    if (was_before_comparator && !is_now_comparator) {
-                        subquery.$where = {
-                            [option]: [subquery.$where]
-                        }
-                        return
-                    }
-                })
+            onChange={(e: any, option: string) =>
+                handleOperatorChange(clause_type, option, condition_subquery)
             }
         />
     )
 })
 
-const ChooseValue = observer(({ subquery }: { subquery: Query }) => {
-    if (!subquery.$where) {
-        return <>Not implemented</>
-    }
-    const clause_type = Object.keys(subquery.$where)[0]
+const ValueTextField = observer(({ condition_subquery }: { condition_subquery: Query }) => {
+    const clause_type = Object.keys(condition_subquery)[0]
     return (
         <TextField
             size='small'
             style={{ width: '200px' }}
             label='Value'
-            value={subquery.$where?.[clause_type]?.[1]?.$escape || ''}
+            value={condition_subquery[clause_type]?.[1]?.$escape || ''}
             onChange={action(e => {
-                if (!subquery.$where) {
-                    subquery.$where = {}
-                }
-                if (!subquery.$where[clause_type]) {
-                    subquery.$where[clause_type] = []
-                }
-                if (!subquery.$where[clause_type][1]) {
-                    subquery.$where[clause_type][1] = {}
+                if (!condition_subquery[clause_type]) {
+                    condition_subquery[clause_type] = [null, { $escape: null }]
                 }
 
-                subquery.$where[clause_type][1].$escape = e.target.value
+                if (!condition_subquery[clause_type][1]) {
+                    condition_subquery[clause_type][1] = { $escape: null }
+                }
+
+                condition_subquery.$where[clause_type][1].$escape = e.target.value
             })}
         />
     )
