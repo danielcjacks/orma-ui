@@ -22,10 +22,9 @@ export const SelectFields = observer(
                 <Typography>Select</Typography>
                 <div
                     style={{
-                        display: 'grid',
-                        gap: '5px',
-
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))'
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px'
                     }}
                 >
                     {possible_field_names.map(field => {
@@ -33,37 +32,27 @@ export const SelectFields = observer(
                         const field_name = title_case(field)
 
                         return (
-                            <Stack key={field}>
-                                <Tooltip title={field_name}>
-                                    <Chip
-                                        onClick={action(() => {
-                                            if (is_selected) {
-                                                delete parent[field]
-                                            } else {
-                                                parent[field] = true
-                                            }
-                                        })}
-                                        icon={
-                                            is_selected ? (
-                                                <MdCheckBox size={icon_size} />
-                                            ) : (
-                                                <MdCheckBoxOutlineBlank size={icon_size} />
-                                            )
+                            <div key={field}>
+                                <Chip
+                                    style={{ padding: '8px' }}
+                                    onClick={action(() => {
+                                        if (is_selected) {
+                                            delete parent[field]
+                                        } else {
+                                            parent[field] = true
                                         }
-                                        label={
-                                            <div
-                                                style={{
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
-                                                }}
-                                            >
-                                                {field_name}
-                                            </div>
-                                        }
-                                        variant={is_selected ? 'filled' : 'outlined'}
-                                    />
-                                </Tooltip>
-                            </Stack>
+                                    })}
+                                    icon={
+                                        is_selected ? (
+                                            <MdCheckBox size={icon_size} />
+                                        ) : (
+                                            <MdCheckBoxOutlineBlank size={icon_size} />
+                                        )
+                                    }
+                                    label={<div>{field_name}</div>}
+                                    variant={is_selected ? 'filled' : 'outlined'}
+                                />
+                            </div>
                         )
                     })}
                 </div>

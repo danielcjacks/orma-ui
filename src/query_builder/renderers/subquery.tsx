@@ -50,27 +50,24 @@ export const Subquery = observer(
                         return possible_field_names.includes(el)
                     })
 
-                    const padding_left = 10
+                    const padding_left = 16
                     return (
                         <div
                             key={entity}
                             style={{
+                                paddingBottom: '10px',
                                 paddingLeft: padding_left,
                                 border: `2px dashed ${alpha('#000', 0.12)}`
                             }}
                         >
                             <EntityName subquery={subquery} field={entity} />
-                            <div style={{ marginLeft: '10px' }}>
+                            <div>
                                 <SelectFields
                                     parent={subquery[entity]!}
                                     selected_field_names={selected_field_names}
                                     possible_field_names={possible_field_names}
                                 />
-                                <Nest
-                                    subquery={subquery[entity]!}
-                                    parent_name={entity}
-                                    orma_schema={orma_schema}
-                                />
+
                                 <Pagination parent={subquery[entity]!} />
                                 <Where
                                     entity_subquery={subquery[entity]}
@@ -78,7 +75,13 @@ export const Subquery = observer(
                                     schema={orma_schema}
                                 />
 
-                                <Rename />
+                                {/* <Rename /> */}
+
+                                <Nest
+                                    subquery={subquery[entity]!}
+                                    parent_name={entity}
+                                    orma_schema={orma_schema}
+                                />
                             </div>
                         </div>
                     )
@@ -86,7 +89,11 @@ export const Subquery = observer(
 
                 <div>
                     {nestable_entities.length > 0 && (
-                        <AddEntity subquery={subquery} nestable_entities={nestable_entities} />
+                        <AddEntity
+                            entity={parent_name || 'query'}
+                            subquery={subquery}
+                            nestable_entities={nestable_entities}
+                        />
                     )}
                 </div>
             </div>

@@ -12,10 +12,10 @@ export const EntityName = observer(({ subquery, field }: { subquery: Query; fiel
             style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px'
+                gap: '8px'
             }}
         >
-            <Typography>{title_case(field)}</Typography>
+            <Typography fontWeight={'bold'}>{title_case(field)}</Typography>
             <IconButton
                 onClick={() => {
                     delete subquery[field]

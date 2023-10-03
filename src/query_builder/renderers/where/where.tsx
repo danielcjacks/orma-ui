@@ -1,12 +1,13 @@
 import { IconButton, Typography } from '@mui/material'
-import { action, toJS } from 'mobx'
+import { action } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { OrmaSchema } from 'orma'
 import { MdAdd } from 'react-icons/md'
 import { container_style } from '../pagination'
 import { Query } from '../subquery'
-import { WhereConditionRow, is_operator, is_connective } from './WhereCondition'
-import { title_case } from '../../../sheet_builder_old/helpers'
+import { WhereConditionRow, is_connective, is_condition } from './where_condition'
+import { JoinedClause, default_blank_condition } from './joined_clause'
+import { AddWhereClauseButton } from './add_where_clause_button'
 
 export const Where = observer(
     ({
@@ -27,10 +28,6 @@ export const Where = observer(
         )
     }
 )
-
-const default_blank_condition = {
-    $eq: ['id', { $escape: null }]
-}
 
 const WhereClause = observer(
     ({
@@ -53,7 +50,7 @@ const WhereClause = observer(
         }
         const clause_type = Object.keys(entity_subquery.$where)[0]
 
-        if (is_operator(clause_type)) {
+        if (is_condition(clause_type)) {
             return (
                 <WhereConditionRow
                     onClose={action(() => {
@@ -67,61 +64,18 @@ const WhereClause = observer(
         }
 
         if (is_connective(clause_type)) {
-            return <MultiClause entity_subquery={entity_subquery} entity={entity} schema={schema} />
+            return (
+                <JoinedClause
+                    clause_subquery={entity_subquery.$where}
+                    entity={entity}
+                    schema={schema}
+                    onClose={action(() => {
+                        delete entity_subquery.$where
+                    })}
+                />
+            )
         }
 
         return <>Not implemented</>
     }
 )
-
-const MultiClause = observer(
-    ({
-        entity_subquery,
-        entity,
-        schema
-    }: {
-        entity_subquery: Query
-        entity: string
-        schema: OrmaSchema
-    }) => {
-        const clause_type = Object.keys(entity_subquery.$where)[0]
-        const conditions = entity_subquery.$where[clause_type]
-        return (
-            <div style={{ display: 'grid', gap: '10px' }}>
-                <Typography>{title_case(clause_type.replace('$', ''))}</Typography>
-                {conditions.map((condition_subquery: Query, index: number) => (
-                    <div key={index}>
-                        <WhereConditionRow
-                            condition_subquery={condition_subquery}
-                            entity={entity}
-                            schema={schema}
-                            onClose={action(() => {
-                                entity_subquery.$where![clause_type]!.splice(index, 1)
-                            })}
-                        />
-                    </div>
-                ))}
-
-                <AddWhereClauseButton
-                    on_click={action(() => {
-                        if (!entity_subquery.$where![clause_type]) {
-                            entity_subquery.$where![clause_type] = []
-                        }
-
-                        entity_subquery.$where![clause_type]!.push(default_blank_condition)
-                    })}
-                />
-            </div>
-        )
-    }
-)
-
-const AddWhereClauseButton = observer(({ on_click }: { on_click: () => void }) => (
-    <IconButton
-        style={{ border: '2px dashed grey', borderRadius: '0px', width: '60px' }}
-        onClick={on_click}
-        size='large'
-    >
-        <MdAdd />
-    </IconButton>
-))

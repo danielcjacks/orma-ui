@@ -6,8 +6,8 @@ import { observer } from 'mobx-react-lite'
 export const container_style = {
     display: 'grid',
     gridTemplateColumns: '80px 1fr',
-    gap: '10px',
-    marginTop: '20px'
+    gap: '8px',
+    marginTop: '16px'
 }
 export const Pagination = observer(({ parent }: { parent: Record<any, any> }) => {
     return (

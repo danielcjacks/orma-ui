@@ -44,9 +44,11 @@ export const TestContainer = observer(({ schema, query }: { schema: OrmaSchema; 
 
     autorun(() => {
         let query = toJS(store.query)
-
         runInAction(() => {
-            store.query_input_text = JSON.stringify(query, null, 2)
+            const new_query = JSON.stringify(query, null, 2)
+            if (new_query !== store.query_input_text) {
+                store.query_input_text = new_query
+            }
         })
     })
 
