@@ -1,13 +1,12 @@
-import { IconButton, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { action } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { OrmaSchema } from 'orma'
-import { MdAdd } from 'react-icons/md'
 import { container_style } from '../pagination'
 import { Query } from '../subquery'
-import { WhereConditionRow, is_connective, is_condition } from './where_condition'
-import { JoinedClause, default_blank_condition } from './joined_clause'
 import { AddWhereClauseButton } from './add_where_clause_button'
+import { JoinedClause, default_blank_condition } from './joined_clause'
+import { WhereConditionRow, is_condition, is_connective } from './where_condition'
 
 export const Where = observer(
     ({

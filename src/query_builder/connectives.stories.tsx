@@ -61,7 +61,7 @@ export const All = observer(() => {
                     users: {
                         first_name: true,
                         $where: {
-                            $or: [
+                            $all: [
                                 {
                                     $eq: ['first_name', { $escape: 'Alice' }]
                                 },

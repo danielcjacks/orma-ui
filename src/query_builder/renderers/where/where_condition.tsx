@@ -13,12 +13,14 @@ export const conditions = {
     $gte: '>=',
     $lt: '<',
     $lte: '<=',
-    $like: 'like'
+    $like: 'like',
+    $in: 'in'
 } as Record<string, string>
 
 export const connectives = {
     $and: 'And',
     $or: 'Or',
+    $all: 'All',
     $any_path: 'Any'
 } as Record<string, string>
 
@@ -66,12 +68,22 @@ export const WhereConditionRow = observer(
 
 const ValueTextField = observer(({ condition_subquery }: { condition_subquery: Query }) => {
     const clause_type = Object.keys(condition_subquery)[0]
+    const is_in = clause_type === '$in'
+
+    const value = condition_subquery[clause_type]?.[1]?.$escape || ''
     return (
         <TextField
+            {...(is_in
+                ? {
+                      multiline: true,
+                      minRows: 10,
+                      maxRows: 50
+                  }
+                : {})}
             size='small'
             style={{ width: '200px' }}
-            label='Value'
-            value={condition_subquery[clause_type]?.[1]?.$escape || ''}
+            label={is_in ? 'One value per line no commas' : 'Value'}
+            value={is_in ? value.join('\n') : value}
             onChange={action(e => {
                 if (!condition_subquery[clause_type]) {
                     condition_subquery[clause_type] = [null, { $escape: null }]
@@ -81,7 +93,9 @@ const ValueTextField = observer(({ condition_subquery }: { condition_subquery: Q
                     condition_subquery[clause_type][1] = { $escape: null }
                 }
 
-                condition_subquery[clause_type][1].$escape = e.target.value
+                condition_subquery[clause_type][1].$escape = is_in
+                    ? e.target.value.split('\n')
+                    : e.target.value
             })}
         />
     )
