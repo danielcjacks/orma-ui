@@ -7,10 +7,11 @@ import { WhereConditionRow, is_condition, is_connective } from './where_conditio
 import { AddWhereClauseButton } from './add_where_clause_button'
 import { IconButton, alpha } from '@mui/material'
 import { MdClose } from 'react-icons/md'
+import { AnyPath } from './any_path'
 
 export const default_blank_condition = { $eq: ['id', { $escape: null }] }
 
-export const JoinedClause = observer(
+export const ConnectiveClause = observer(
     ({
         clause_subquery,
         entity,
@@ -24,6 +25,8 @@ export const JoinedClause = observer(
     }) => {
         const clause_type = Object.keys(clause_subquery)[0]
         const conditions = clause_subquery[clause_type]
+
+        const is_any_path = clause_type === '$any_path'
 
         return (
             <div>
@@ -39,11 +42,20 @@ export const JoinedClause = observer(
                         borderLeft: `2px dashed ${alpha('#000', 0.12)}`,
                         display: 'grid',
                         gap: '10px',
-
                         padding: '16px'
                     }}
                 >
                     {conditions.map((condition_subquery: Query, index: number) => {
+                        if (is_any_path && index === 0) {
+                            return (
+                                <AnyPath
+                                    path={condition_subquery as string[]}
+                                    entity={entity}
+                                    schema={schema}
+                                />
+                            )
+                        }
+
                         const condition_clause_type = Object.keys(condition_subquery)[0]
                         const is_a_condition = is_condition(condition_clause_type)
                         const is_a_connective = is_connective(condition_clause_type)
@@ -63,7 +75,7 @@ export const JoinedClause = observer(
                         }
                         if (is_a_connective) {
                             return (
-                                <JoinedClause
+                                <ConnectiveClause
                                     clause_subquery={condition_subquery}
                                     entity={entity}
                                     schema={schema}
@@ -77,15 +89,17 @@ export const JoinedClause = observer(
                         return <>Not implemented yet</>
                     })}
 
-                    <AddWhereClauseButton
-                        on_click={action(() => {
-                            if (!clause_subquery[clause_type]) {
-                                clause_subquery[clause_type] = []
-                            }
+                    {((is_any_path && conditions.length <= 1) || !is_any_path) && (
+                        <AddWhereClauseButton
+                            on_click={action(() => {
+                                if (!clause_subquery[clause_type]) {
+                                    clause_subquery[clause_type] = []
+                                }
 
-                            clause_subquery[clause_type].push(default_blank_condition)
-                        })}
-                    />
+                                clause_subquery[clause_type].push(default_blank_condition)
+                            })}
+                        />
+                    )}
                 </div>
             </div>
         )

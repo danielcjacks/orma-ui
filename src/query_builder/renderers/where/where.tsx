@@ -5,7 +5,7 @@ import { OrmaSchema } from 'orma'
 import { container_style } from '../pagination'
 import { Query } from '../subquery'
 import { AddWhereClauseButton } from './add_where_clause_button'
-import { JoinedClause, default_blank_condition } from './joined_clause'
+import { ConnectiveClause, default_blank_condition } from './connective_clause'
 import { WhereConditionRow, is_condition, is_connective } from './where_condition'
 
 export const Where = observer(
@@ -64,7 +64,7 @@ const WhereClause = observer(
 
         if (is_connective(clause_type)) {
             return (
-                <JoinedClause
+                <ConnectiveClause
                     clause_subquery={entity_subquery.$where}
                     entity={entity}
                     schema={schema}

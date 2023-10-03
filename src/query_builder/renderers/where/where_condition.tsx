@@ -20,8 +20,7 @@ export const conditions = {
 export const connectives = {
     $and: 'And',
     $or: 'Or',
-    $all: 'All',
-    $any_path: 'Any'
+    $any_path: 'Any Path'
 } as Record<string, string>
 
 export const condition_options = Object.keys(conditions)

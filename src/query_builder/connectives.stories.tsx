@@ -103,22 +103,10 @@ export const AnyPath = observer(() => {
                 {
                     posts: {
                         $where: {
-                            $and: [
+                            $any_path: [
+                                ['comments'],
                                 {
-                                    $any_path: [
-                                        ['comments'],
-                                        {
-                                            $eq: ['id', 1]
-                                        }
-                                    ]
-                                },
-                                {
-                                    $any_path: [
-                                        ['users'],
-                                        {
-                                            $eq: ['id', 1]
-                                        }
-                                    ]
+                                    $eq: ['id', 1]
                                 }
                             ]
                         }

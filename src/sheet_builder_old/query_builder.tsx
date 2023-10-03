@@ -586,7 +586,7 @@ const QueryNestedClause = observer(
     }
 )
 
-const QueryNestedPath = observer(
+export const QueryNestedPath = observer(
     ({ path_array, query, schema }: { path_array: any; query: any; schema: OrmaSchema }) => {
         const nested_path = safe_path_or([], path_array, query).filter(
             (el: any) => !!el

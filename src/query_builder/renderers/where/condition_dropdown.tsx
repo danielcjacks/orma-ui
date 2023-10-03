@@ -8,7 +8,8 @@ import {
     conditions,
     connectives
 } from './where_condition'
-import { action } from 'mobx'
+import { action, toJS } from 'mobx'
+import { isNil } from 'ramda'
 
 const cleanup_obj = (obj: any) => {
     Object.keys(obj).forEach(key => {
@@ -16,41 +17,95 @@ const cleanup_obj = (obj: any) => {
     })
 }
 
+const clause_types = {
+    condition: ['$eq', '$lt', '$gt', '$lte', '$gte', '$like'],
+    connective: ['$and', '$or'],
+    in: ['$in'],
+    any_path: ['$any_path']
+}
+
+const get_clause_type = (clause: string) => {
+    for (const [clause_type, clauses] of Object.entries(clause_types)) {
+        if (clauses.includes(clause)) {
+            return clause_type
+        }
+    }
+    return 'none'
+}
+
+const clause_mappings = {
+    condition: {
+        condition: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
+        in: (from_object: any, new_clause: any, old_clause: any) => {
+            const array_elements: any = []
+            if (!isNil(from_object[old_clause][1].$escape)) {
+                array_elements.push(from_object[old_clause][1])
+            }
+
+            return [
+                from_object[old_clause][0],
+                { $escape: from_object[old_clause][1].$escape?.split(',') }
+            ]
+        },
+        connective: (from_object: any, new_clause: any, old_clause: string) => [from_object],
+        any_path: (from_object: any, new_clause: any) => [[], from_object]
+    },
+    in: {
+        in: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
+        // array -> simple is a lossy mapping
+        condition: (
+            from_object: { [x: string]: any[] },
+            new_clause: any,
+            old_clause: string | number
+        ) => [
+            from_object[old_clause][0],
+            { $escape: from_object?.[old_clause]?.[1]?.$escape?.join(', ') || '' }
+        ],
+        connective: (
+            from_object: { [x: string]: any[] },
+            new_clause: any,
+            old_clause: string | number
+        ) =>
+            from_object[old_clause][1].map((el: any) => ({
+                eq: [from_object[old_clause][0], el]
+            })),
+        any_path: (from_object: any, new_clause: any) => [[], from_object]
+    },
+    connective: {
+        connective: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
+        any_path: (from_object: any, new_clause: any, old_clause: any) => [[], from_object]
+        // none: (from_object: { [x: string]: any[] }, new_clause: any, old_clause: string | number) =>
+        //     from_object[old_clause][0]
+    },
+    any_path: {
+        any_path: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
+        connective: (
+            from_object: { [x: string]: any[] },
+            new_clause: any,
+            old_clause: string | number
+        ) => [from_object[old_clause][1]]
+        // none: (from_object: { [x: string]: any[] }, new_clause: any, old_clause: string | number) =>
+        //     from_object[old_clause][1]
+    }
+} as any
+
 export const handleOperatorChange = action(
     (prev: string, next: string, condition_subquery: Query) => {
         if (!next) {
             return
         }
 
-        const switching_from_condition = is_condition(prev)
-        const switching_to_condition = is_condition(next)
-        const prev_value = condition_subquery[prev]
+        const prev_type = get_clause_type(prev)
+        const next_type = get_clause_type(next)
+        const new_value = clause_mappings?.[prev_type]?.[next_type]?.(
+            toJS(condition_subquery),
+            next,
+            prev
+        )
 
         cleanup_obj(condition_subquery)
 
-        // eg when switching from $eq to $gt
-        if (switching_from_condition && switching_to_condition) {
-            // same nest just change the condition
-            condition_subquery[next] = prev_value
-        }
-
-        // eg when switching from $and to $or
-        else if (!switching_from_condition && !switching_to_condition) {
-            // same nest just change the connective
-            condition_subquery[next] = prev_value
-        }
-
-        // eg when switching from $and to $eq
-        else if (!switching_from_condition && switching_to_condition) {
-            // remove one layer of nesting
-            condition_subquery[next] = prev_value?.[0]
-        }
-
-        // eg when switching from $eq to $and
-        else if (switching_from_condition && !switching_to_condition) {
-            // wrap in one layer of nesting
-            condition_subquery[next] = [{ [prev]: prev_value }]
-        }
+        condition_subquery[next] = new_value
     }
 )
 

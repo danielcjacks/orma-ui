@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite'
 import { OrmaSchema } from 'orma'
 import { get_field_names } from 'orma/build/helpers/schema_helpers'
 import { Query } from '../subquery'
+import { title_case } from '../../../helpers/helpers'
 
 export const ColumnDropdown = observer(
     ({
@@ -32,7 +33,8 @@ export const ColumnDropdown = observer(
                 )}
                 // inputValue={value || ''}
                 // onInputChange={(e, value) => set_value(value)}
-                value={value || ''}
+                getOptionLabel={option => title_case(option)}
+                value={title_case(value) || ''}
                 onChange={(e: any, option: any) => {
                     runInAction(() => {
                         if (!condition_subquery[clause_type]) {
