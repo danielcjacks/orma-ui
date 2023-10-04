@@ -59,7 +59,7 @@ export const Subquery = observer(
                             style={{
                                 paddingBottom: '10px',
                                 paddingLeft: padding_left,
-                                border: `2px dashed ${alpha('#000', 0.12)}`
+                                borderLeft: `3px solid ${alpha('#000', 0.12)}`
                             }}
                         >
                             <EntityName subquery={subquery} field={entity} />

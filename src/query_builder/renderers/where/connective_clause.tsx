@@ -40,7 +40,7 @@ export const ConnectiveClause = observer(
 
                 <div
                     style={{
-                        borderLeft: `2px dashed ${alpha('#000', 0.12)}`,
+                        borderLeft: `3px solid ${alpha('#000', 0.12)}`,
                         display: 'grid',
                         gap: '10px',
                         padding: '16px'
