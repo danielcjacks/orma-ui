@@ -1,6 +1,6 @@
 {
     "name": "orma-ui",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "description": "UI components and functions for orma, react and mobx",
     "scripts": {
         "dev": "ladle serve",

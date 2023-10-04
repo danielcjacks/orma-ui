@@ -3,12 +3,13 @@ import { observer } from 'mobx-react-lite'
 import { OrmaSchema } from 'orma'
 import { Query } from '../subquery'
 import { ConnectiveDropdown } from './connective_dropdown'
-import { WhereConditionRow, is_condition, is_connective } from './where_condition'
+import { WhereConditionRow } from './where_condition'
 import { AddWhereClauseButton } from './add_where_clause_button'
 import { IconButton, alpha } from '@mui/material'
 import { MdClose } from 'react-icons/md'
 import { AnyPath } from './any_path'
-import { last } from 'ramda'
+import { isEmpty, last } from 'ramda'
+import { cleanup_obj, is_condition, is_connective } from './condition_dropdown'
 
 export const default_blank_condition = { $eq: ['id', { $escape: null }] }
 
@@ -25,9 +26,15 @@ export const ConnectiveClause = observer(
         onClose: () => void
     }) => {
         const clause_type = Object.keys(clause_subquery)[0]
-        const conditions = clause_subquery[clause_type]
 
         const is_any_path = clause_type === '$any_path'
+        const is_not = clause_type === '$not'
+
+        const conditions = is_not ? [clause_subquery[clause_type]] : clause_subquery[clause_type]
+
+        const hide_add_button =
+            (is_any_path && conditions.length > 1) ||
+            (is_not && !isEmpty(clause_subquery[clause_type]))
 
         return (
             <div>
@@ -47,6 +54,17 @@ export const ConnectiveClause = observer(
                     }}
                 >
                     {conditions.map((condition_subquery: Query, index: number) => {
+                        const onConnectiveClose = action(() => {
+                            if (is_not) {
+                                cleanup_obj(clause_subquery[clause_type])
+                            }
+                            clause_subquery[clause_type]!.splice(index, 1)
+                        })
+
+                        if (is_not && isEmpty(condition_subquery)) {
+                            return <></>
+                        }
+
                         if (is_any_path && index === 0) {
                             return (
                                 <AnyPath
@@ -80,9 +98,7 @@ export const ConnectiveClause = observer(
                                         condition_subquery={condition_subquery}
                                         entity={chooser_entity}
                                         schema={schema}
-                                        onClose={action(() => {
-                                            clause_subquery[clause_type]!.splice(index, 1)
-                                        })}
+                                        onClose={onConnectiveClose}
                                     />
                                 </div>
                             )
@@ -93,9 +109,7 @@ export const ConnectiveClause = observer(
                                     clause_subquery={condition_subquery}
                                     entity={chooser_entity}
                                     schema={schema}
-                                    onClose={action(() => {
-                                        clause_subquery[clause_type]!.splice(index, 1)
-                                    })}
+                                    onClose={onConnectiveClose}
                                 />
                             )
                         }
@@ -103,9 +117,14 @@ export const ConnectiveClause = observer(
                         return <>Not implemented yet</>
                     })}
 
-                    {((is_any_path && conditions.length <= 1) || !is_any_path) && (
+                    {!hide_add_button && (
                         <AddWhereClauseButton
                             on_click={action(() => {
+                                if (is_not) {
+                                    clause_subquery[clause_type] = default_blank_condition
+                                    return
+                                }
+
                                 if (!clause_subquery[clause_type]) {
                                     clause_subquery[clause_type] = []
                                 }

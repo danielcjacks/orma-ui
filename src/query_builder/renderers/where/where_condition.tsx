@@ -5,28 +5,7 @@ import { OrmaSchema } from 'orma'
 import { MdClose } from 'react-icons/md'
 import { Query } from '../subquery'
 import { ColumnDropdown } from './column_dropdown'
-import { OperatorDropdown } from './condition_dropdown'
-
-export const conditions = {
-    $eq: '=',
-    $gt: '>',
-    $gte: '>=',
-    $lt: '<',
-    $lte: '<=',
-    $like: 'like',
-    $in: 'in'
-} as Record<string, string>
-
-export const connectives = {
-    $and: 'And',
-    $or: 'Or',
-    $any_path: 'Any Path'
-} as Record<string, string>
-
-export const condition_options = Object.keys(conditions)
-export const connective_options = Object.keys(connectives)
-export const is_condition = (option: any) => condition_options.includes(option)
-export const is_connective = (option: any) => connective_options.includes(option)
+import { ConditionDropdown } from './condition_dropdown'
 
 export const WhereConditionRow = observer(
     ({
@@ -53,7 +32,7 @@ export const WhereConditionRow = observer(
                     entity={entity}
                     schema={schema}
                 />
-                <OperatorDropdown condition_subquery={condition_subquery} />
+                <ConditionDropdown condition_subquery={condition_subquery} />
 
                 <ValueTextField condition_subquery={condition_subquery} />
 
@@ -69,7 +48,7 @@ const ValueTextField = observer(({ condition_subquery }: { condition_subquery: Q
     const clause_type = Object.keys(condition_subquery)[0]
     const is_in = clause_type === '$in'
 
-    const value = condition_subquery[clause_type]?.[1]?.$escape || ''
+    const value = condition_subquery[clause_type]?.[1]?.$escape || []
     return (
         <TextField
             {...(is_in
@@ -82,7 +61,7 @@ const ValueTextField = observer(({ condition_subquery }: { condition_subquery: Q
             size='small'
             style={{ width: '200px' }}
             label={is_in ? 'One value per line no commas' : 'Value'}
-            value={is_in ? value.join('\n') : value}
+            value={is_in ? value?.join('\n') : value}
             onChange={action(e => {
                 if (!condition_subquery[clause_type]) {
                     condition_subquery[clause_type] = [null, { $escape: null }]

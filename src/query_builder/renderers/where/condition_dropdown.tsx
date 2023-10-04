@@ -1,28 +1,45 @@
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react-lite'
 import { Query } from '../subquery'
-import {
-    condition_options,
-    connective_options,
-    is_condition,
-    conditions,
-    connectives
-} from './where_condition'
+
 import { action, toJS } from 'mobx'
 import { isNil } from 'ramda'
 
-const cleanup_obj = (obj: any) => {
+export const cleanup_obj = (obj: any) => {
     Object.keys(obj).forEach(key => {
         delete obj[key]
     })
 }
 
+export const conditions = {
+    $eq: '=',
+    $gt: '>',
+    $gte: '>=',
+    $lt: '<',
+    $lte: '<=',
+    $like: 'like',
+    $in: 'in'
+} as Record<string, string>
+
+export const connectives = {
+    $and: 'And',
+    $or: 'Or',
+    $any_path: 'Any Path',
+    $not: 'Not'
+} as Record<string, string>
+
 const clause_types = {
     condition: ['$eq', '$lt', '$gt', '$lte', '$gte', '$like'],
     connective: ['$and', '$or'],
     in: ['$in'],
-    any_path: ['$any_path']
+    any_path: ['$any_path'],
+    not: ['$not']
 }
+
+export const condition_options = Object.keys(conditions)
+export const connective_options = Object.keys(connectives)
+export const is_condition = (option: any) => condition_options.includes(option)
+export const is_connective = (option: any) => connective_options.includes(option)
 
 const get_clause_type = (clause: string) => {
     for (const [clause_type, clauses] of Object.entries(clause_types)) {
@@ -35,6 +52,7 @@ const get_clause_type = (clause: string) => {
 
 const clause_mappings = {
     condition: {
+        not: (from_object: any, new_clause: any, old_clause: any) => from_object,
         condition: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
         in: (from_object: any, new_clause: any, old_clause: any) => {
             const array_elements: any = []
@@ -51,6 +69,7 @@ const clause_mappings = {
         any_path: (from_object: any, new_clause: any) => [[], from_object]
     },
     in: {
+        not: (from_object: any, new_clause: any, old_clause: any) => from_object,
         in: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
         // array -> simple is a lossy mapping
         condition: (
@@ -69,12 +88,14 @@ const clause_mappings = {
         any_path: (from_object: any, new_clause: any) => [[], from_object]
     },
     connective: {
+        not: (from_object: any, new_clause: any, old_clause: any) => from_object,
         connective: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
         any_path: (from_object: any, new_clause: any, old_clause: any) => [[], from_object]
         // none: (from_object: { [x: string]: any[] }, new_clause: any, old_clause: string | number) =>
         //     from_object[old_clause][0]
     },
     any_path: {
+        not: (from_object: any, new_clause: any, old_clause: any) => from_object,
         any_path: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
         connective: (
             from_object: { [x: string]: any[] },
@@ -86,7 +107,7 @@ const clause_mappings = {
     }
 } as any
 
-export const handleOperatorChange = action(
+export const handleConditionChange = action(
     (prev: string, next: string, condition_subquery: Query) => {
         if (!next) {
             return
@@ -106,7 +127,7 @@ export const handleOperatorChange = action(
     }
 )
 
-export const OperatorDropdown = observer(
+export const ConditionDropdown = observer(
     ({ condition_subquery }: { condition_subquery: Query }) => {
         const clause_type = Object.keys(condition_subquery)[0]
         const options = [...condition_options, ...connective_options]
@@ -123,17 +144,17 @@ export const OperatorDropdown = observer(
                 renderInput={params => (
                     <TextField
                         {...params}
-                        label='Operator'
+                        label='Condition'
                         size='small'
                         style={{ width: '130px' }}
                     />
                 )}
                 // inputValue={value}
                 // onInputChange={(e, value) => set_value(value)}
-                groupBy={option => (is_condition(option) ? 'Operators' : 'Connectives')}
+                groupBy={option => (is_condition(option) ? 'Conditions' : 'Connectives')}
                 value={clause_type}
                 onChange={(e: any, option: string) =>
-                    handleOperatorChange(clause_type, option, condition_subquery)
+                    handleConditionChange(clause_type, option, condition_subquery)
                 }
             />
         )

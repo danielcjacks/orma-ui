@@ -1,8 +1,8 @@
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react-lite'
 import { Query } from '../subquery'
-import { connective_options, connectives, is_condition, conditions } from './where_condition'
-import { handleOperatorChange } from './condition_dropdown'
+import { connective_options, connectives, is_condition, conditions } from './condition_dropdown'
+import { handleConditionChange } from './condition_dropdown'
 
 export const ConnectiveDropdown = observer(
     ({ condition_subquery }: { condition_subquery: Query }) => {
@@ -21,17 +21,17 @@ export const ConnectiveDropdown = observer(
                 renderInput={params => (
                     <TextField
                         {...params}
-                        // label='Operator'
+                        // label='Condition'
                         size='small'
                         style={{ width: '200px' }}
                     />
                 )}
                 // inputValue={value}
                 // onInputChange={(e, value) => set_value(value)}
-                groupBy={option => (is_condition(option) ? 'Operators' : 'Connectives')}
+                groupBy={option => (is_condition(option) ? 'Conditions' : 'Connectives')}
                 value={clause_type}
                 onChange={(e: any, option: string) =>
-                    handleOperatorChange(clause_type, option, condition_subquery)
+                    handleConditionChange(clause_type, option, condition_subquery)
                 }
             />
         )
