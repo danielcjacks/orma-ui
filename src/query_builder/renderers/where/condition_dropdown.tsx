@@ -104,6 +104,13 @@ const clause_mappings = {
         ) => [from_object[old_clause][1]]
         // none: (from_object: { [x: string]: any[] }, new_clause: any, old_clause: string | number) =>
         //     from_object[old_clause][1]
+    },
+    not: {
+        not: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
+        any_path: (from_object: any, new_clause: any, old_clause: any) => from_object[old_clause],
+        connective: (from_object: any, new_clause: any, old_clause: any) => [
+            from_object[old_clause]
+        ]
     }
 } as any
 
