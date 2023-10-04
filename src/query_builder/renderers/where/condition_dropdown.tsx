@@ -65,10 +65,7 @@ const clause_mappings = {
             from_object: { [x: string]: any[] },
             new_clause: any,
             old_clause: string | number
-        ) =>
-            from_object[old_clause][1].map((el: any) => ({
-                eq: [from_object[old_clause][0], el]
-            })),
+        ) => [from_object],
         any_path: (from_object: any, new_clause: any) => [[], from_object]
     },
     connective: {

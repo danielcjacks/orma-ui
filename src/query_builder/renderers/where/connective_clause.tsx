@@ -8,6 +8,7 @@ import { AddWhereClauseButton } from './add_where_clause_button'
 import { IconButton, alpha } from '@mui/material'
 import { MdClose } from 'react-icons/md'
 import { AnyPath } from './any_path'
+import { last } from 'ramda'
 
 export const default_blank_condition = { $eq: ['id', { $escape: null }] }
 
@@ -50,6 +51,10 @@ export const ConnectiveClause = observer(
                             return (
                                 <AnyPath
                                     path={condition_subquery as string[]}
+                                    onChange={() => {
+                                        // remove the next condition
+                                        clause_subquery[clause_type]!.splice(index + 1, 1)
+                                    }}
                                     entity={entity}
                                     schema={schema}
                                 />
@@ -59,12 +64,21 @@ export const ConnectiveClause = observer(
                         const condition_clause_type = Object.keys(condition_subquery)[0]
                         const is_a_condition = is_condition(condition_clause_type)
                         const is_a_connective = is_connective(condition_clause_type)
+
+                        const chooser_entity = is_any_path
+                            ? last(clause_subquery[clause_type][0])
+                            : entity
+
+                        if (typeof chooser_entity !== 'string') {
+                            return <>{JSON.stringify(chooser_entity)}</>
+                        }
+
                         if (is_a_condition) {
                             return (
                                 <div key={index}>
                                     <WhereConditionRow
                                         condition_subquery={condition_subquery}
-                                        entity={entity}
+                                        entity={chooser_entity}
                                         schema={schema}
                                         onClose={action(() => {
                                             clause_subquery[clause_type]!.splice(index, 1)
@@ -77,7 +91,7 @@ export const ConnectiveClause = observer(
                             return (
                                 <ConnectiveClause
                                     clause_subquery={condition_subquery}
-                                    entity={entity}
+                                    entity={chooser_entity}
                                     schema={schema}
                                     onClose={action(() => {
                                         clause_subquery[clause_type]!.splice(index, 1)

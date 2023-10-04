@@ -10,12 +10,6 @@ import { title_case } from '../../../helpers/helpers'
 import { Fragment, useState } from 'react'
 import { MdChevronRight } from 'react-icons/md'
 
-export const AnyPath = observer(
-    ({ path, entity, schema }: { path: string[]; entity: string; schema: OrmaSchema }) => {
-        return <QueryNestedPath path={path} entity={entity} schema={schema} />
-    }
-)
-
 const get_edges = (entity_name: string, schema: OrmaSchema) => {
     const parent_edges = get_parent_edges(entity_name, schema)
     const child_edges = get_child_edges(entity_name, schema)
@@ -34,27 +28,56 @@ export const get_nested_path_edge_tables = (path: any[], entity: string, schema:
     return edge_tables
 }
 
-export const QueryNestedPath = observer(
-    ({ path, entity, schema }: { path: any; entity: string; schema: OrmaSchema }) => {
+export const AnyPath = observer(
+    ({
+        path,
+        entity,
+        schema,
+        onChange
+    }: {
+        path: any
+        entity: string
+        schema: OrmaSchema
+        onChange: Function
+    }) => {
         const edge_tables = get_nested_path_edge_tables(path, entity, schema)
         const options = uniq(edge_tables)
 
-        const [value, set_value] = useState(null)
+        const [value, set_value] = useState(null) // doesn't do anything but makes autocomplete not have text after a select
 
         return (
             <>
-                <div style={{ display: 'flex', placeItems: 'center' }}>
-                    {path.map((table_name: string, i: number) => (
-                        <Fragment key={i}>
-                            <Chip
-                                label={title_case(table_name)}
-                                onDelete={action(e => path.splice(i, 1))}
-                            />
+                <div
+                    style={{
+                        display: 'flex',
+                        placeItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            placeItems: 'center'
+                        }}
+                    >
+                        {path.map((table_name: string, i: number) => (
+                            <Fragment key={i}>
+                                <Chip
+                                    label={title_case(table_name)}
+                                    onDelete={
+                                        i === path.length - 1
+                                            ? action(e => {
+                                                  path.splice(i, 1)
+                                                  onChange()
+                                              })
+                                            : undefined
+                                    }
+                                />
 
-                            <MdChevronRight />
-                        </Fragment>
-                    ))}
-
+                                {i !== path.length - 1 && <MdChevronRight />}
+                            </Fragment>
+                        ))}
+                    </div>
                     {options.length > 0 && (
                         <Autocomplete
                             disablePortal
@@ -75,6 +98,7 @@ export const QueryNestedPath = observer(
                             getOptionLabel={option => title_case(option)}
                             value={value}
                             onChange={(e: any, option: any) => {
+                                onChange()
                                 runInAction(() => {
                                     const new_nested_path = [...path, option]
                                     path.splice(0, path.length, ...new_nested_path)
