@@ -65,6 +65,8 @@ export const Subquery = observer(
                             <EntityName subquery={subquery} field={entity} />
                             <div>
                                 <SelectFields
+                                    orma_schema={orma_schema}
+                                    entity={entity}
                                     parent={subquery[entity]!}
                                     selected_field_names={selected_field_names}
                                     possible_field_names={possible_field_names}
