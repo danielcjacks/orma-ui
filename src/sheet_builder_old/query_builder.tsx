@@ -3,7 +3,7 @@ import { action, observable, toJS } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { get_field_names, is_entity_name, is_field_name } from 'orma/build/helpers/schema_helpers'
 import { OrmaSchema } from 'orma/build/types/schema/schema_types'
-import { get_select } from 'orma/build/query/macros/select_macro'
+import { get_new_select } from 'orma/build/query/macros/select_macro'
 import { dropLast, last } from 'ramda'
 import React from 'react'
 import { MdAdd, MdArrowDownward, MdArrowUpward, MdChevronRight, MdClose } from 'react-icons/md'
@@ -132,7 +132,7 @@ const QueryArray = observer(({ children }: { children: any }) => {
 const QuerySelect = observer(
     ({ path_array, query, schema }: { path_array: any; query: any; schema: OrmaSchema }) => {
         const subquery = safe_path_or({} as any, path_array, query)
-        const selects = get_select(subquery, path_array, query, schema).filter(
+        const selects = get_new_select(subquery, path_array, query, schema).filter(
             el => typeof el === 'string'
         ) as string[]
 
