@@ -35,7 +35,7 @@ export const OrderBy = observer(
         entity: string
     }) => {
         const order_bys: string[] = entity_subquery.$order_by ?? []
-        const [value, set_value] = useState(null)
+        const [input_value, set_input_value] = useState('')
         const possible_fields = get_field_names(entity, schema).filter(el => {
             return !order_bys.includes(el)
         })
@@ -90,10 +90,9 @@ export const OrderBy = observer(
                                     style={{ width: '200px' }}
                                 />
                             )}
-                            inputValue={value || ''}
-                            onInputChange={(e, value) => {}}
+                            inputValue={input_value}
+                            onInputChange={(e, value) => set_input_value(value)}
                             getOptionLabel={option => title_case(option)}
-                            value={value}
                             onChange={(e: any, option: any) => {
                                 runInAction(() => {
                                     if (!option) return
@@ -102,6 +101,7 @@ export const OrderBy = observer(
                                     }
                                     entity_subquery.$order_by.push({ $asc: option })
                                 })
+                                set_input_value('')
                                 return
                             }}
                         />

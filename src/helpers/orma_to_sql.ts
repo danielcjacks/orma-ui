@@ -1,8 +1,5 @@
 import { action } from 'mobx'
-import { OrmaStatement } from 'orma'
-import { orma_mutate } from 'orma/src/mutate/mutate'
-import { orma_query } from 'orma/src/query/query'
-import { OrmaQuery } from 'orma/src/types/query/query_types'
+import { OrmaQuery, OrmaStatement, orma_mutate, orma_query } from 'orma'
 import { format } from 'sql-formatter'
 
 export const reset_query_log = action(

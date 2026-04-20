@@ -44,7 +44,7 @@ The primary component is the `QueryBuilder`. It requires an observable query obj
 import React from 'react';
 import { makeAutoObservable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilder } from 'orma-ui/src/query_builder/query_builder';
+import { QueryBuilder } from 'orma-ui';
 
 // Define your schema and an observable query object
 const schema = { /* your OrmaSchema */ };

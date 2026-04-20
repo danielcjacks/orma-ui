@@ -5,7 +5,7 @@ import { action } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { container_style } from './pagination'
 import { get_field_schema } from 'orma/build/helpers/schema_helpers'
-import { OrmaSchema } from 'orma/src/types/schema/schema_types'
+import { OrmaSchema } from 'orma'
 
 const icon_size = 18
 

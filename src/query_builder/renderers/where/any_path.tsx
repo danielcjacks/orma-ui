@@ -1,8 +1,7 @@
 import { observer } from 'mobx-react-lite'
 import { Query } from '../subquery'
 import { OrmaSchema } from 'orma'
-import { get_all_edges, get_child_edges, get_parent_edges } from 'orma/build/helpers/schema_helpers'
-import { get_direct_edges } from 'orma/src/helpers/schema_helpers'
+import { get_all_edges, get_child_edges, get_direct_edges, get_parent_edges } from 'orma/build/helpers/schema_helpers'
 import { last, uniq } from 'ramda'
 import { Autocomplete, Box, Chip, Grid, MenuItem, TextField } from '@mui/material'
 import { action, runInAction, toJS } from 'mobx'
@@ -43,7 +42,7 @@ export const AnyPath = observer(
         const edge_tables = get_nested_path_edge_tables(path, entity, schema)
         const options = uniq(edge_tables)
 
-        const [value, set_value] = useState(null) // doesn't do anything but makes autocomplete not have text after a select
+        const [input_value, set_input_value] = useState('')
 
         return (
             <>
@@ -93,16 +92,16 @@ export const AnyPath = observer(
                                     style={{ width: '200px' }}
                                 />
                             )}
-                            inputValue={value || ''}
-                            onInputChange={(e, value) => {}}
+                            inputValue={input_value}
+                            onInputChange={(e, value) => set_input_value(value)}
                             getOptionLabel={option => title_case(option)}
-                            value={value}
                             onChange={(e: any, option: any) => {
                                 onChange()
                                 runInAction(() => {
                                     const new_nested_path = [...path, option]
                                     path.splice(0, path.length, ...new_nested_path)
                                 })
+                                set_input_value('')
                                 return
                             }}
                         />

@@ -1,4 +1,4 @@
-import { OrmaSchema } from 'orma/src/types/schema/schema_types'
+import { OrmaSchema } from 'orma'
 
 export const test_schema = {
     $entities: {
